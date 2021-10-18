@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileupload());
 
 app.use("/user", require("./routes/user"));
+app.get("/", (req, res) => res.json({ message: "test" }));
 
 async function start() {
   try {
