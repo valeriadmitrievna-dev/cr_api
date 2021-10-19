@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const AWS = require("aws-sdk");
 const User = require("../models/User");
 const withAuth = require("../middlewares/auth");
+const Portfolio = require("../models/Portfolio");
 
 const credentials = new AWS.Credentials({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -45,21 +46,30 @@ router.post("/signup", async (req, res) => {
         .json({ error: "User with this name already exists" });
     }
 
+    const portfolio = new Portfolio();
+    await portfolio.save(err => {
+      if (err) {
+        console.log(err.message);
+        return res.status(500).json({
+          error: "500: Error registering new user please try again later.",
+        });
+      }
+    });
+
     // create user
     const newUser = new User({
       name,
       password,
+      portfolio,
     });
 
-    // save new user
     await newUser.save(function (err, user) {
       if (err) {
-        console.log(err);
+        console.log(err.message);
         return res.status(500).json({
           error: "500: Error registering new user please try again later.",
         });
       } else {
-        console.log(user);
         const payload = { id: user._id };
         const token = jwt.sign(payload, process.env.SECRET, {
           expiresIn: "24h",

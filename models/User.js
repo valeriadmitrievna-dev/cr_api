@@ -8,13 +8,12 @@ const schema = new Schema({
   name: { type: String, required: true, unic: true, trim: true },
   created: { type: Date, default: new Date() },
   description: { type: String, default: "" },
-  subscriptions: [{ type: Types.ObjectId, ref: "Portfolio" }],
+  subscriptions: [{ type: Types.ObjectId, ref: "User" }],
   avatar: {
     type: String,
-    default:
-      "https://cryptopro.app/wp-content/plugins/ideapush/inc/images/default-image.png",
+    default: "https://cryptoranks.s3.amazonaws.com/avatar.png",
   },
-  portfolio: { type: Types.ObjectId, ref: "Portfolio" },
+  portfolio: { type: Types.ObjectId, ref: "Portfolio", required: true },
 });
 
 schema.pre("save", function (next) {
