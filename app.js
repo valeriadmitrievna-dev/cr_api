@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const fileupload = require("express-fileupload");
 const cors = require("cors");
 const PORT = process.env.PORT || 5000;
+const axios = require("axios");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileupload());
 
 app.use("/user", require("./routes/user"));
+app.use("/coins", require("./routes/coin"));
 app.get("/", (req, res) => res.json({ message: "test" }));
 
 async function start() {
@@ -23,6 +25,9 @@ async function start() {
     });
     app.listen(PORT, () => {
       console.log("We are live on " + PORT);
+
+      // fecth coins cost
+      require("./helpers/coins_fetch")(axios);
     });
   } catch (e) {
     console.log("Server error:", e.message);
