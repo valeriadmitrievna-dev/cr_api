@@ -15,6 +15,7 @@ app.use(fileupload());
 
 app.use("/user", require("./routes/user"));
 app.use("/coins", require("./routes/coin"));
+app.use("/deals", require("./routes/deal"));
 app.get("/", (req, res) => res.json({ message: "test" }));
 
 async function start() {
@@ -28,6 +29,7 @@ async function start() {
 
       // fecth coins cost
       require("./helpers/coins_fetch")(axios);
+      require("./helpers/coins_forecast")();
     });
   } catch (e) {
     console.log("Server error:", e.message);
