@@ -16,7 +16,7 @@ module.exports = async axios => {
             { name: coin.id },
             {
               logo: coin.image.small,
-              cost: Math.round(coin.market_data.current_price.usd),
+              price: Math.round(coin.market_data.current_price.usd),
               cap: coin.market_data.market_cap.usd,
               name: coin.id,
               updated: new Date(),

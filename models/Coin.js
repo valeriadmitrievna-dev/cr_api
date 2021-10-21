@@ -2,7 +2,7 @@ const { Schema, model, Types } = require("mongoose");
 
 const schema = new Schema({
   logo: { type: String, required: true },
-  cost: { type: Number, required: true },
+  price: { type: Number, required: true },
   cap: { type: Number, required: true },
   name: { type: String, required: true },
   deals: [{ type: Types.ObjectId, ref: "Deal" }],
@@ -12,7 +12,6 @@ const schema = new Schema({
     quarter: { type: Number },
     year: { type: Number },
   },
-  updated: { type: Date, required: true },
 });
 
 module.exports = model("Coin", schema);

@@ -34,10 +34,6 @@ async function start() {
     });
     http.listen(PORT, () => {
       console.log("We are live on " + PORT);
-
-      // fecth coins cost
-      // require("./helpers/coins_fetch")(axios);
-      // require("./helpers/coins_forecast")();
     });
   } catch (e) {
     console.log("Server error:", e.message);
@@ -55,11 +51,6 @@ const getAllCoinsAndSend = async event => {
 
 io.on("connection", socket => {
   console.log("a user connected");
-
-  // socket.on("disconnect", () => {
-  //   console.log("user disconnected");
-  // });
-
   getAllCoinsAndSend("updateCoins");
 });
 
@@ -72,7 +63,7 @@ setInterval(async () => {
           { name: coin.id },
           {
             logo: coin.image.small,
-            cost: Math.round(coin.market_data.current_price.usd),
+            price: Math.round(coin.market_data.current_price.usd),
             cap: coin.market_data.market_cap.usd,
             name: coin.id,
             updated: new Date(),

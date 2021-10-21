@@ -5,7 +5,7 @@ const schema = new Schema({
   coin: {
     name: { type: String, required: true },
     logo: { type: String, required: true },
-    cost: { type: Number, required: true },
+    price: { type: Number, required: true },
   },
   type: { type: String, required: true },
   comment: { type: Types.ObjectId, ref: "Comment" },

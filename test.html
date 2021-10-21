@@ -21,10 +21,10 @@
         color: #fff;
         font-weight: bold;
       }
-      h1:not(.cost) {
+      h1:not(.price) {
         margin-right: 20px;
       }
-      h1:not(#cost) {
+      h1:not(#price) {
         color: blue;
       }
     </style>
@@ -46,11 +46,11 @@
       //     .then(({ data }) => {
       //       body.innerHTML = `
       //         <h1>BTC</h1>
-      //         <h1 class="cost" id="cost">${data.coin.cost}</h1>
-      //         <h1 class="cost">$</h1>
+      //         <h1 class="price" id="price">${data.coin.price}</h1>
+      //         <h1 class="price">$</h1>
       //         `;
       //       setInterval(() => {
-      //         socket.emit("requirePrice", coin, data.coin.cost);
+      //         socket.emit("requirePrice", coin, data.coin.price);
       //       }, 10000);
       //     })
       //     .catch(function (error) {
@@ -58,13 +58,13 @@
       //     });
 
       socket.on("updateCoins", data => {
-        console.log(data.find(coin => coin.name === name).cost);
+        console.log(data.find(coin => coin.name === name).price);
         body.innerHTML = `
             <h1>BTC</h1>
-            <h1 class="cost" id="cost">${
-              data.find(coin => coin.name === name).cost
+            <h1 class="price" id="price">${
+              data.find(coin => coin.name === name).price
             }</h1>
-            <h1 class="cost">$</h1>
+            <h1 class="price">$</h1>
         `;
       });
     </script>

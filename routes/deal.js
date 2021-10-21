@@ -96,7 +96,7 @@ router.post("/", withAuth, async (req, res) => {
       coin: {
         name: _coin.name,
         logo: _coin.logo,
-        cost: _coin.cost,
+        price: _coin.price,
       },
       type,
       comment: _comment,
