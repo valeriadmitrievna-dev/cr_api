@@ -8,7 +8,7 @@ const schema = new Schema({
   success: { type: Number, default: 0 },
   coins: [
     {
-      coin: { type: String, required: true },
+      coin: { type: Types.ObjectId, ref: "Coin" },
       count: { type: Number, default: 0 },
     },
   ],

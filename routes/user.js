@@ -103,7 +103,7 @@ router.post("/signin", async (req, res) => {
     }
 
     // get user by name and password
-    const user = await User.findOne({ name });
+    const user = await User.findOne({ name }).populate("portfolio");
     if (!user) {
       return res.status(404).json({
         error: "User not found",

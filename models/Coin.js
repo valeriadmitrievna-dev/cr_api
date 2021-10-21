@@ -5,7 +5,6 @@ const schema = new Schema({
   price: { type: Number, required: true },
   cap: { type: Number, required: true },
   name: { type: String, required: true },
-  deals: [{ type: Types.ObjectId, ref: "Deal" }],
   forecast: {
     week: { type: Number },
     month: { type: Number },
