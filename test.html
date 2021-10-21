@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BTC</title>
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background-color: rgb(56, 167, 231);
+      }
+      h1 {
+        line-height: 1;
+        margin: 0;
+        font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+          "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+        font-size: 46px;
+        color: #fff;
+        font-weight: bold;
+      }
+      h1:not(.cost) {
+        margin-right: 20px;
+      }
+      h1:not(#cost) {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Loading...</h1>
+
+    <!-- code -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const body = document.body;
+      const socket = io();
+      const n = Math.round(Math.random() * 10);
+      const name = "bitcoin";
+
+      //   axios
+      //     .get(`/coins/${coin}/7`)
+      //     .then(({ data }) => {
+      //       body.innerHTML = `
+      //         <h1>BTC</h1>
+      //         <h1 class="cost" id="cost">${data.coin.cost}</h1>
+      //         <h1 class="cost">$</h1>
+      //         `;
+      //       setInterval(() => {
+      //         socket.emit("requirePrice", coin, data.coin.cost);
+      //       }, 10000);
+      //     })
+      //     .catch(function (error) {
+      //       body.innerHTML = `<h1>${error.response.data.error}</h1>`;
+      //     });
+
+      socket.on("updateCoins", data => {
+        console.log(data.find(coin => coin.name === name).cost);
+        body.innerHTML = `
+            <h1>BTC</h1>
+            <h1 class="cost" id="cost">${
+              data.find(coin => coin.name === name).cost
+            }</h1>
+            <h1 class="cost">$</h1>
+        `;
+      });
+    </script>
+  </body>
+</html>

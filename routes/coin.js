@@ -43,19 +43,11 @@ router.get("/:name/:days", withAuth, async (req, res) => {
     });
     prices.splice(days - 1, 1);
 
-    const _coin = await Coin.findOneAndUpdate(
-      { name },
-      { cost: Math.round(prices[days - 1].price) }
-    );
+    const _coin = await Coin.findOne({ name });
 
-    _coin.save((err, coin) => {
-      if (err) {
-        throw new Error(err.message);
-      }
-      res.status(200).json({
-        coin,
-        chart: prices,
-      });
+    res.status(200).json({
+      coin: _coin,
+      chart: prices,
     });
   } catch (e) {
     console.log(e.message);
