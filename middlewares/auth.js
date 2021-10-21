@@ -1,19 +1,18 @@
 const jwt = require("jsonwebtoken");
-const util = require("util");
 
 module.exports = async function (req, res, next) {
   try {
-    const verifyPromise = util.promisify(jwt.verify);
-    if (req.method === "OPTIONS") next();
-    const token = req.headers.authorization.split(" ")[1];
+    if (req.method === "OPTIONS") return next();
+
+    const token = req.cookies["access token"];
     if (!token) {
-      return res.status(401).send({
-        error: "Not Authenticated",
-      });
+      return res.status(401).json({ error: "Not authenticated" });
     }
-    const decoded = await verifyPromise(token, process.env.SECRET);
-    req.decoded = decoded;
-    next();
+
+    const data = jwt.verify(token, process.env.SECRET);
+    req.decoded = data;
+
+    return next();
   } catch (error) {
     return res.status(401).send({
       error: "Not Authenticated",

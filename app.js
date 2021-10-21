@@ -3,15 +3,17 @@ const express = require("express");
 const mongoose = require("mongoose");
 const fileupload = require("express-fileupload");
 const cors = require("cors");
-const PORT = process.env.PORT || 5000;
 const axios = require("axios");
+const cookieparser=require('cookie-parser')
 
+const PORT = process.env.PORT || 5000;
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileupload());
+app.use(cookieparser())
 
 app.use("/user", require("./routes/user"));
 app.use("/coins", require("./routes/coin"));

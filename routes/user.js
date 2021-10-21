@@ -118,7 +118,11 @@ router.post("/signin", async (req, res) => {
     const token = jwt.sign(payload, process.env.SECRET, {
       expiresIn: "24h",
     });
-    return res.status(200).json({ user, token });
+    res.cookie("access token", token, {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    });
+    return res.status(200).json(user);
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
