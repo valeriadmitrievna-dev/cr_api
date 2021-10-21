@@ -124,7 +124,7 @@ router.post("/", withAuth, async (req, res) => {
     if (potrfolio_coins) {
       _portfolio.coins = _portfolio.coins.map(c => {
         if (c.coin.toString() === _coin._id.toString()) {
-          c.count = _count;
+          c.count = _count < 0 ? 0 : _count;
         }
         return c;
       });
@@ -151,7 +151,7 @@ router.post("/", withAuth, async (req, res) => {
     _deal.save(callback);
     _comment.save(callback);
 
-    res.status(200).json(_portfolio);
+    res.status(200).json(_deal);
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({

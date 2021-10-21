@@ -7,6 +7,7 @@ const axios = require("axios");
 const cookieparser = require("cookie-parser");
 const { Server } = require("socket.io");
 const Coin = require("./models/Coin");
+const Deal = require("./models/Deal");
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -45,8 +46,18 @@ start();
 // socket.io
 
 const getAllCoinsAndSend = async event => {
-  const coins = await Coin.find();
-  io.emit(event, coins);
+  try {
+    const coins = await Coin.find();
+    io.emit(event, coins);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const countForecast = (deals, time) => {
+  return deals
+    .filter(d => d.time === time)
+    .reduce((sum, v) => sum + v.value, 0);
 };
 
 io.on("connection", socket => {
@@ -54,6 +65,7 @@ io.on("connection", socket => {
   getAllCoinsAndSend("updateCoins");
 });
 
+// update coins info
 setInterval(async () => {
   try {
     const { data } = await axios.get(`https://api.coingecko.com/api/v3/coins`);
@@ -73,6 +85,14 @@ setInterval(async () => {
             upsert: true,
           }
         );
+        const deals = await Deal.find({ coin });
+        const forecast = {
+          week: countForecast(deals, "week"),
+          month: countForecast(deals, "month"),
+          quarter: countForecast(deals, "quarter"),
+          year: countForecast(deals, "year"),
+        };
+        doc.forecast = forecast;
         doc.save(function (err, c) {
           if (err) throw new Error(err.message);
         });

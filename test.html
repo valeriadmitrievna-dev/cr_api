@@ -41,24 +41,8 @@
       const n = Math.round(Math.random() * 10);
       const name = "bitcoin";
 
-      //   axios
-      //     .get(`/coins/${coin}/7`)
-      //     .then(({ data }) => {
-      //       body.innerHTML = `
-      //         <h1>BTC</h1>
-      //         <h1 class="price" id="price">${data.coin.price}</h1>
-      //         <h1 class="price">$</h1>
-      //         `;
-      //       setInterval(() => {
-      //         socket.emit("requirePrice", coin, data.coin.price);
-      //       }, 10000);
-      //     })
-      //     .catch(function (error) {
-      //       body.innerHTML = `<h1>${error.response.data.error}</h1>`;
-      //     });
-
       socket.on("updateCoins", data => {
-        console.log(data.find(coin => coin.name === name).price);
+        console.log(data.find(coin => coin.name === name));
         body.innerHTML = `
             <h1>BTC</h1>
             <h1 class="price" id="price">${
