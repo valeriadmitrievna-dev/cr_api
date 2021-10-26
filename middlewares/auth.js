@@ -4,7 +4,8 @@ module.exports = async function (req, res, next) {
   try {
     if (req.method === "OPTIONS") return next();
 
-    const token = req.cookies["access token"];
+    const token =
+      req.cookies["access token"] || req.headers.authorization.split(" ")[1];
     if (!token) {
       return res.status(401).json({ error: "Not authenticated" });
     }

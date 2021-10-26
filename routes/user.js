@@ -74,7 +74,7 @@ router.post("/signup", async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET, {
           expiresIn: "24h",
         });
-        return res.status(200).json({ token, user });
+        return res.status(200).json(token);
       }
     });
   } catch (e) {
@@ -122,7 +122,7 @@ router.post("/signin", async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
     });
-    return res.status(200).json(user);
+    return res.status(200).json(token);
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
@@ -131,8 +131,8 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-// Upload profile image
-router.post("/upload/avatar", withAuth, async (req, res) => {
+// Update profile image
+router.put("/update/avatar", withAuth, async (req, res) => {
   try {
     const { id } = req.decoded;
     const s3 = new AWS.S3();
@@ -158,6 +158,148 @@ router.post("/upload/avatar", withAuth, async (req, res) => {
       return res.status(200).json({
         url: data.Location,
       });
+    });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+});
+
+// Check if user authenticated
+router.get("/auth/check", withAuth, (req, res) => {
+  const data = req.decoded;
+  return res.status(200).json();
+});
+
+// Get user data
+router.get("/data", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const user = await User.findOne({ _id: id }).populate({
+      path: "portfolio",
+      populate: {
+        path: "deals",
+        model: "Deal",
+        populate: [
+          {
+            path: "coin",
+            model: "Coin",
+          },
+          {
+            path: "comment",
+            model: "Comment",
+          },
+        ],
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    return res.status(200).json(user);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+});
+
+// Update user email
+router.put("/update/email", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const { email } = req.body;
+    const user = await User.findOne({ _id: id });
+    if (user.email === email) {
+      return res.status(400).json({
+        error: "The new email must not be the same as the old one",
+      });
+    }
+    user.save((err, u) => {
+      if (err) throw new Error("Error on updating email");
+      return res.status(200).json(u);
+    });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+});
+
+// Update user name and/or password
+router.put("/update/creds", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const { name, password, type } = req.body;
+    const user = await User.findOne({ _id: id });
+    if (type === "name" && user.name === name) {
+      return res.status(400).json({
+        error: "The new name must not be the same as the old one",
+      });
+    }
+    if (type === "password" && bcrypt.compareSync(password, user.password)) {
+      return res.status(400).json({
+        error: "The new password must not be the same as the old one",
+      });
+    }
+    user.name = name;
+    user.password = password;
+    user.save((err, u) => {
+      if (err) throw new Error("Error on updating user credentials");
+      return res.status(200).json(u);
+    });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+});
+
+// Update portfolio description
+router.put("/update/description/portfolio", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const { desc } = req.body;
+    const user = await User.findOne({ _id: id });
+    const portfolio = await Portfolio.findOne({ _id: user.portfolio });
+    if (portfolio.description === desc) {
+      return res.status(400).json({
+        error:
+          "The new portfolio description must not be the same as the old one",
+      });
+    }
+    portfolio.description = desc;
+    portfolio.save(err => {
+      if (err) throw new Error("Error on updating, try again later");
+      return res.status(200).json();
+    });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+});
+
+// Update user description
+router.put("/update/description/user", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const { desc } = req.body;
+    const user = await User.findOne({ _id: id });
+    if (user.description === desc) {
+      return res.status(400).json({
+        error: "The new user description must not be the same as the old one",
+      });
+    }
+    user.description = desc;
+    user.save(err => {
+      if (err) throw new Error("Error on updating, try again later");
+      return res.status(200).json();
     });
   } catch (e) {
     console.log(e.message);

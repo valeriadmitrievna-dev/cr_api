@@ -92,12 +92,19 @@ router.post("/", withAuth, async (req, res) => {
 
     const _deal = new Deal({
       owner: _user,
-      coin: _coin,
+      coin: {
+        _id: _coin._id,
+        price: _coin.price,
+        name: _coin.name,
+        short_name: _coin.short_name,
+        logo: _coin.logo,
+      },
       type,
       comment: _comment,
       value,
       time,
       count,
+      sum: count * _coin.price,
     });
 
     const potrfolio_coins = _portfolio.coins.find(

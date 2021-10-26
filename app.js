@@ -12,7 +12,11 @@ const Deal = require("./models/Deal");
 const PORT = process.env.PORT || 5000;
 const app = express();
 const http = require("http").createServer(app);
-const io = new Server(http);
+const io = new Server(http, {
+  cors: {
+    origin: "*",
+  },
+});
 
 app.use(cors());
 app.use(express.json());
@@ -23,6 +27,7 @@ app.use(cookieparser());
 app.use("/user", require("./routes/user"));
 app.use("/coins", require("./routes/coin"));
 app.use("/deals", require("./routes/deal"));
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/test.html");
 });
@@ -55,9 +60,9 @@ const getAllCoinsAndSend = async event => {
 };
 
 const countForecast = (deals, time) => {
-  return deals
-    .filter(d => d.time === time)
-    .reduce((sum, v) => sum + v.value, 0);
+  return (
+    deals.filter(d => d.time === time).reduce((sum, v) => sum + v.value, 0) || 0
+  );
 };
 
 io.on("connection", socket => {
@@ -79,13 +84,14 @@ setInterval(async () => {
             cap: coin.market_data.market_cap.usd,
             name: coin.id,
             updated: new Date(),
+            short_name: coin.symbol,
           },
           {
             new: true,
             upsert: true,
           }
         );
-        const deals = await Deal.find({ coin });
+        const deals = await Deal.find({ "coin._id": doc._id });
         const forecast = {
           week: countForecast(deals, "week"),
           month: countForecast(deals, "month"),
@@ -93,7 +99,8 @@ setInterval(async () => {
           year: countForecast(deals, "year"),
         };
         doc.forecast = forecast;
-        doc.save(function (err, c) {
+        doc.deals = deals;
+        doc.save(function (err) {
           if (err) throw new Error(err.message);
         });
       });
@@ -102,4 +109,4 @@ setInterval(async () => {
   } catch (error) {
     console.log(error.message);
   }
-}, 30000);
+}, 300000);
