@@ -3,7 +3,8 @@ const router = Router();
 const axios = require("axios");
 const withAuth = require("../middlewares/auth");
 const Coin = require("../models/Coin");
-const { format } = require("date-fns");
+const { format, differenceInDays, startOfDay } = require("date-fns");
+const Deal = require("../models/Deal");
 
 // Get all coins data
 router.get("/", withAuth, async (req, res) => {
@@ -19,7 +20,7 @@ router.get("/", withAuth, async (req, res) => {
 });
 
 // Get coin data by name
-router.get("/:name/:days", withAuth, async (req, res) => {
+router.get("/info/:name/:days", withAuth, async (req, res) => {
   try {
     const { name, days } = req.params;
     let url;
@@ -53,6 +54,107 @@ router.get("/:name/:days", withAuth, async (req, res) => {
     console.log(e.message);
     return res.status(500).json({
       error: "Internal server error",
+    });
+  }
+});
+
+router.get("/trending/:range", async (req, res) => {
+  try {
+    const { range } = req.params;
+    const deals = await Deal.find();
+    let _deals;
+    switch (range) {
+      case "week":
+        _deals = deals.filter(
+          d =>
+            differenceInDays(
+              startOfDay(new Date()),
+              startOfDay(new Date(d.created))
+            ) <= 7
+        );
+        break;
+      case "month":
+        _deals = deals.filter(
+          d =>
+            differenceInDays(
+              startOfDay(new Date()),
+              startOfDay(new Date(d.created))
+            ) <= 31
+        );
+        break;
+      case "day":
+        _deals = deals.filter(
+          d =>
+            differenceInDays(
+              startOfDay(new Date()),
+              startOfDay(new Date(d.created))
+            ) === 0
+        );
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid time range" });
+    }
+    const coins = Object.values(
+      _deals
+        .map(deal => deal.coin)
+        .reduce((acc, cur) => Object.assign(acc, { [cur.name]: cur }), {})
+    );
+    const filtered = coins
+      .map(c => {
+        return {
+          coin: c,
+          buy: _deals.filter(d => d.coin.name === c.name && d.type === "buy")
+            .length,
+          sell: _deals.filter(d => d.coin.name === c.name && d.type === "sell")
+            .length,
+          forecast: {
+            time: _deals
+              .filter(d => d.coin.name === c.name)
+              .reduce(
+                (a, b, i, arr) =>
+                  arr.filter(v => v?.time === a?.time).length >=
+                  arr.filter(v => v?.time === b?.time).length
+                    ? a
+                    : b,
+                null
+              ).time,
+            value: Math.round(
+              _deals
+                .filter(
+                  d =>
+                    d.coin.name === c.name &&
+                    d.time ===
+                      _deals
+                        .filter(d => d.coin.name === c.name)
+                        .reduce(
+                          (a, b, i, arr) =>
+                            arr.filter(v => v?.time === a?.time).length >=
+                            arr.filter(v => v?.time === b?.time).length
+                              ? a
+                              : b,
+                          null
+                        ).time
+                )
+                .map(d => d.value)
+                .reduce(function (sum, a, i, ar) {
+                  sum += a;
+                  return i == ar.length - 1
+                    ? ar.length == 0
+                      ? 0
+                      : sum / ar.length
+                    : sum;
+                }, 0)
+            ),
+          },
+        };
+      })
+      .sort((a, b) => b.buy + b.sell - (a.buy + a.sell))
+      .slice(0, 3);
+    return res.status(200).json(filtered);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      error: "Something went wrong",
     });
   }
 });

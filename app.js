@@ -59,19 +59,7 @@ const getAllCoinsAndSend = async event => {
   }
 };
 
-const countForecast = (deals, time) => {
-  return (
-    deals.filter(d => d.time === time).reduce((sum, v) => sum + v.value, 0) || 0
-  );
-};
-
-io.on("connection", socket => {
-  console.log("a user connected");
-  getAllCoinsAndSend("updateCoins");
-});
-
-// update coins info
-setInterval(async () => {
+const updateCoinsInfo = async () => {
   try {
     const { data } = await axios.get(`https://api.coingecko.com/api/v3/coins`);
     if (data) {
@@ -81,7 +69,6 @@ setInterval(async () => {
           {
             logo: coin.image.small,
             price: Math.round(coin.market_data.current_price.usd),
-            cap: coin.market_data.market_cap.usd,
             name: coin.id,
             updated: new Date(),
             short_name: coin.symbol,
@@ -91,22 +78,26 @@ setInterval(async () => {
             upsert: true,
           }
         );
-        const deals = await Deal.find({ "coin._id": doc._id });
-        const forecast = {
-          week: countForecast(deals, "week"),
-          month: countForecast(deals, "month"),
-          quarter: countForecast(deals, "quarter"),
-          year: countForecast(deals, "year"),
-        };
-        doc.forecast = forecast;
-        doc.deals = deals;
-        doc.save(function (err) {
-          if (err) throw new Error(err.message);
-        });
+        // doc.forecast = await require("./helpers/coins_forecast")(doc);
+        if (doc) {
+          doc.deals = await Deal.find({ "coin.name": doc.name });
+          doc.save(function (err) {
+            if (err) throw new Error(err.message);
+          });
+        }
       });
     }
     getAllCoinsAndSend("updateCoins");
   } catch (error) {
     console.log(error.message);
   }
-}, 300000);
+};
+updateCoinsInfo();
+
+io.on("connection", socket => {
+  console.log("a user connected");
+  getAllCoinsAndSend("updateCoins");
+});
+
+// update coins info
+setInterval(updateCoinsInfo, 300000);
