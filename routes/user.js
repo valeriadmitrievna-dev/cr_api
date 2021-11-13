@@ -80,7 +80,7 @@ router.post("/signup", async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -119,14 +119,14 @@ router.post("/signin", async (req, res) => {
       expiresIn: "24h",
     });
     res.cookie("access token", token, {
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
       httpOnly: true,
     });
     return res.status(200).json(token);
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -162,7 +162,7 @@ router.put("/update/avatar", withAuth, async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -177,23 +177,22 @@ router.get("/auth/check", withAuth, (req, res) => {
 router.get("/data", withAuth, async (req, res) => {
   try {
     const { id } = req.decoded;
-    const user = await User.findOne({ _id: id }).populate({
-      path: "portfolio",
-      populate: {
-        path: "deals",
-        model: "Deal",
-        populate: [
-          {
-            path: "coin",
-            model: "Coin",
-          },
-          {
-            path: "comment",
-            model: "Comment",
-          },
-        ],
+    const user = await User.findOne({ _id: id }).populate([
+      {
+        path: "portfolio",
+        populate: {
+          path: "deals",
+          model: "Deal",
+          populate: [
+            {
+              path: "comment",
+              model: "Comment",
+            },
+          ],
+        },
       },
-    });
+      "subscriptions",
+    ]);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -201,7 +200,7 @@ router.get("/data", withAuth, async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -217,14 +216,15 @@ router.put("/update/email", withAuth, async (req, res) => {
         error: "The new email must not be the same as the old one",
       });
     }
+    user.email = email;
     user.save((err, u) => {
       if (err) throw new Error("Error on updating email");
-      return res.status(200).json(u);
+      return res.status(200).json(u.email);
     });
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -245,16 +245,23 @@ router.put("/update/creds", withAuth, async (req, res) => {
         error: "The new password must not be the same as the old one",
       });
     }
-    user.name = name;
-    user.password = password;
+    if (type === "name") user.name = name;
+    if (type === "password") user.password = password;
     user.save((err, u) => {
-      if (err) throw new Error("Error on updating user credentials");
-      return res.status(200).json(u);
+      try {
+        if (err) throw new Error(err.message);
+        return res.status(200).json(u);
+      } catch (err) {
+        console.log(err.message);
+        return res
+          .status(400)
+          .json({ error: "Error on updating user credentials" });
+      }
     });
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -280,7 +287,7 @@ router.put("/update/description/portfolio", withAuth, async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -304,7 +311,135 @@ router.put("/update/description/user", withAuth, async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
+    });
+  }
+});
+
+// Get users count
+router.get("/count", withAuth, async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users.length);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// Get paginated portfolio
+router.get("/portfolios/:count/:page", withAuth, async (req, res) => {
+  try {
+    const { page, count } = req.params;
+    const users = await User.find()
+      .limit(parseInt(count))
+      .skip(parseInt(count) * (parseInt(page) - 1))
+      .populate({
+        path: "portfolio",
+        populate: [
+          {
+            path: "deals",
+            model: "Deal",
+          },
+          {
+            path: "coins",
+            model: "Coin",
+          },
+        ],
+      });
+
+    const followersCount = [];
+    for await (const user of users) {
+      const followers = await User.find({ subscriptions: { $in: [user._id] } });
+      followersCount.push(followers.length);
+    }
+    const portfolios = users.map((user, id) => {
+      return {
+        ...user._doc,
+        followers: followersCount[id],
+      };
+    });
+    res.status(200).json(portfolios);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// Toggle subscription
+router.post("/subscription", withAuth, async (req, res) => {
+  try {
+    const { subscribed, subscription } = req.body;
+    if (subscribed === undefined || !subscription) {
+      return res
+        .status(400)
+        .json({ error: "Invalid try to toggle subscription" });
+    }
+    const { id } = req.decoded;
+    const user = await User.findOne({ _id: id });
+    const candidate = user.subscriptions.find(s => s == subscription);
+    if (subscribed && !candidate) {
+      return res.status(400).json({
+        error: "You cannot unsubscribe if you have not been subscribed",
+      });
+    }
+    if (!subscribed && !!candidate) {
+      return res.status(400).json({
+        error: "You cannot subscribe if you are already subscribed",
+      });
+    }
+    if (subscribed) {
+      user.subscriptions = user.subscriptions.filter(s => s != subscription);
+    } else {
+      const sub_user = await User.findOne({ _id: subscription });
+      user.subscriptions.push(sub_user);
+    }
+    await user.save(err => {
+      if (err) throw new Error("Error on saving");
+    });
+    res.status(200).json({ success: true });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// Get current user data
+router.get("/portfolio/:name", withAuth, async (req, res) => {
+  try {
+    const { name } = req.params;
+    const user = await User.findOne({ name }).populate({
+      path: "portfolio",
+      populate: [
+        {
+          path: "deals",
+          populate: {
+            path: "comment",
+            model: "Comment",
+          },
+        },
+        {
+          path: "coins",
+          model: "Coin",
+        },
+      ],
+    });
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+    res.status(200).json(user);
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
     });
   }
 });

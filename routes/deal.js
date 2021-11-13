@@ -16,7 +16,7 @@ router.get("/", withAuth, async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });
@@ -105,41 +105,15 @@ router.post("/", withAuth, async (req, res) => {
       time,
       count,
       sum: count * _coin.price,
+      created: new Date(),
     });
 
     const potrfolio_coins = _portfolio.coins.find(
-      c => c.coin.toString() == _coin._id.toString()
+      c => c.toString() == _coin._id.toString()
     );
 
-    const __count = () => {
-      if (potrfolio_coins) {
-        if (type === "buy") {
-          return potrfolio_coins.count + count;
-        } else {
-          return potrfolio_coins.count - count;
-        }
-      } else {
-        if (type === "buy") {
-          return count;
-        } else {
-          return 0;
-        }
-      }
-    };
-    const _count = __count();
-
-    if (potrfolio_coins) {
-      _portfolio.coins = _portfolio.coins.map(c => {
-        if (c.coin.toString() === _coin._id.toString()) {
-          c.count = _count < 0 ? 0 : _count;
-        }
-        return c;
-      });
-    } else {
-      _portfolio.coins.push({
-        coin: _coin,
-        count: _count < 0 ? 0 : _count,
-      });
+    if (!potrfolio_coins) {
+      _portfolio.coins.push(_coin);
     }
 
     _portfolio.deals.push(_deal);
@@ -162,7 +136,7 @@ router.post("/", withAuth, async (req, res) => {
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
-      error: "Something went wrong",
+      error: "Internal server error",
     });
   }
 });

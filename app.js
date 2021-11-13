@@ -18,7 +18,15 @@ const io = new Server(http, {
   },
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "development"
+        ? process.env.API_DEV
+        : process.env.API_ORIGIN,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileupload());
@@ -27,6 +35,7 @@ app.use(cookieparser());
 app.use("/user", require("./routes/user"));
 app.use("/coins", require("./routes/coin"));
 app.use("/deals", require("./routes/deal"));
+app.use("/comments", require("./routes/comment"));
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/test.html");
@@ -78,7 +87,6 @@ const updateCoinsInfo = async () => {
             upsert: true,
           }
         );
-        // doc.forecast = await require("./helpers/coins_forecast")(doc);
         if (doc) {
           doc.deals = await Deal.find({ "coin.name": doc.name });
           doc.save(function (err) {

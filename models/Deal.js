@@ -16,6 +16,7 @@ const schema = new Schema({
   created: { type: Date, default: new Date() },
   likes: { type: Number, default: 0 },
   dislikes: { type: Number, default: 0 },
+  voted: [{ type: Types.ObjectId, ref: "User" }],
   closed: { type: Boolean, default: false },
   count: { type: Number, required: true },
   sum: { type: Number, required: true },
