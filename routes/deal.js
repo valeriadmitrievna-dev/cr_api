@@ -141,4 +141,78 @@ router.post("/", withAuth, async (req, res) => {
   }
 });
 
+// like deal
+router.put("/like", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const { deal } = req.body;
+    const user = await User.findOne({ _id: id });
+    const _deal = await Deal.findOne({ _id: deal });
+    if (!user || !_deal) {
+      return res.status(400).json({
+        error: "Delivered data is incorect",
+      });
+    }
+    if (!!_deal.likes.find(d => d.toString() == user._id.toString())) {
+      return res.status(400).json({
+        error: "You cant like if you already liked",
+      });
+    }
+    _deal.dislikes = _deal.dislikes.filter(
+      d => d.toString() != user._id.toString()
+    );
+    _deal.likes.push(user);
+    _deal.save(err => {
+      if (err) {
+        console.log(err.message);
+        return res.status(500).json({
+          error: "Internal server error",
+        });
+      }
+    });
+    res.status(200).json({ success: true });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// dislike deal
+router.put("/dislike", withAuth, async (req, res) => {
+  try {
+    const { id } = req.decoded;
+    const { deal } = req.body;
+    const user = await User.findOne({ _id: id });
+    const _deal = await Deal.findOne({ _id: deal });
+    if (!user || !_deal) {
+      return res.status(400).json({
+        error: "Delivered data is incorect",
+      });
+    }
+    if (_deal.dislikes.find(d => d.toString() == user._id.toString())) {
+      return res.status(400).json({
+        error: "You cant dislike if you already disliked",
+      });
+    }
+    _deal.likes = _deal.likes.filter(d => d.toString() != user._id.toString());
+    _deal.dislikes.push(user);
+    _deal.save(err => {
+      if (err) {
+        console.log(err.message);
+        return res.status(500).json({
+          error: "Internal server error",
+        });
+      }
+    });
+    res.status(200).json({ success: true });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
 module.exports = router;
