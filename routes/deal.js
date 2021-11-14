@@ -119,18 +119,15 @@ router.post("/", withAuth, async (req, res) => {
     _portfolio.deals.push(_deal);
 
     const callback = err => {
-      if (err) {
-        console.log(err.message);
-        return res.status(500).json({
-          error: "Internal error",
-        });
-      }
+      if (err) throw new Error(err.message);
     };
 
-    _coin.save(callback);
-    _portfolio.save(callback);
     _deal.save(callback);
+    _portfolio.save(callback);
     _comment.save(callback);
+    _coin.save(callback);
+
+    await require("../helpers/get_success");
 
     res.status(200).json(_deal);
   } catch (e) {

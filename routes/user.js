@@ -193,10 +193,14 @@ router.get("/data", withAuth, async (req, res) => {
       },
       "subscriptions",
     ]);
+    const followers = await User.find({ subscriptions: { $in: [user._id] } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    return res.status(200).json(user);
+    return res.status(200).json({
+      ...user._doc,
+      followers: followers.length,
+    });
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({
