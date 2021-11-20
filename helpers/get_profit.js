@@ -96,7 +96,6 @@ module.exports = async axios => {
         throw new Error(error.message);
       }
     }
-    console.log("Portfolios updated");
   } catch (error) {
     console.log(error.message);
   }
