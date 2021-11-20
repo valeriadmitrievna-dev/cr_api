@@ -126,8 +126,8 @@ router.get("/trending/:range", withAuth, async (req, res) => {
           },
         };
       })
-      .sort((a, b) => b.buy + b.sell - (a.buy + a.sell))
-      // .slice(0, 3);
+      .sort((a, b) => b.buy + b.sell - (a.buy + a.sell));
+    // .slice(0, 3);
     return res.status(200).json(filtered);
   } catch (e) {
     console.log(e);
@@ -181,7 +181,13 @@ router.get("/deals/:name", withAuth, async (req, res) => {
       "coin.name": name,
     })
       .sort({ _id: -1 })
-      .populate("owner");
+      .populate({
+        path: "owner",
+        populate: {
+          path: "portfolio",
+          model: "Portfolio",
+        },
+      });
     res.status(200).json(deals);
   } catch (e) {
     console.log(e);

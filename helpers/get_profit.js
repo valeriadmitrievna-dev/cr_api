@@ -36,7 +36,6 @@ module.exports = async axios => {
           price: d[1],
         }));
     }
-    // console.log(_coins[0]);
     for (const p of portfolios) {
       try {
         const _profit = _coins[0].prices.map(p => ({
@@ -74,13 +73,30 @@ module.exports = async axios => {
           if (isNaN(_p.value)) _p.value = 0;
         }
         p.profit = _profit.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // p.save(err => {
+        //   if (err) throw new Error(err);
+        // });
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    }
+    const ratingArray = portfolios
+      .sort((a, b) => b.deals.length - a.deals.length)
+      .sort((a, b) => b.coins.length - a.coins.length)
+      .sort(
+        (a, b) => b.profit[b.profit.length - 1] - a.profit[a.profit.length - 1]
+      );
+    for (const p of ratingArray) {
+      try {
+        p.rating_number = ratingArray.indexOf(p) + 1;
         p.save(err => {
-          if (err) throw new Error(err);
+          if (err) throw new Error(error.message);
         });
       } catch (error) {
         throw new Error(error.message);
       }
     }
+    console.log("Portfolios updated");
   } catch (error) {
     console.log(error.message);
   }

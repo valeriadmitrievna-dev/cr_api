@@ -11,6 +11,7 @@ const schema = new Schema({
   ],
   success: { type: Number, default: 0 },
   coins: [{ type: Types.ObjectId, ref: "Coin" }],
+  rating_number: { type: Number },
 });
 
 module.exports = model("Portfolio", schema);

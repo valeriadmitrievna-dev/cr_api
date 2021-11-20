@@ -47,6 +47,8 @@ router.post("/signup", async (req, res) => {
     }
 
     const portfolio = new Portfolio();
+    const portfolios = Portfolio.find();
+    portfolio.rating_number = portfolios.length + 1;
     await portfolio.save(err => {
       if (err) {
         console.log(err.message);
@@ -191,9 +193,17 @@ router.get("/data", withAuth, async (req, res) => {
           ],
         },
       },
-      "subscriptions",
+      {
+        path: "subscriptions",
+        populate: {
+          path: "portfolio",
+          model: "Portfolio",
+        },
+      },
     ]);
-    const followers = await User.find({ subscriptions: { $in: [user._id] } });
+    const followers = await User.find({
+      subscriptions: { $in: [user._id] },
+    });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
