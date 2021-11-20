@@ -9,9 +9,8 @@ const { Server } = require("socket.io");
 const Coin = require("./models/Coin");
 const Deal = require("./models/Deal");
 const cron = require("node-cron");
-const Portfolio = require("./models/Portfolio");
-const { startOfDay } = require("date-fns");
 const success = require("./helpers/get_success");
+const profit = require("./helpers/get_profit");
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -76,7 +75,7 @@ const updateCoinsInfo = async () => {
   try {
     const { data } = await axios.get(`https://api.coingecko.com/api/v3/coins`);
     if (data) {
-      await data.forEach(async coin => {
+      for (const coin of data) {
         try {
           const doc = await Coin.findOneAndUpdate(
             { name: coin.id },
@@ -101,7 +100,7 @@ const updateCoinsInfo = async () => {
         } catch (error) {
           throw new Error(error.message);
         }
-      });
+      }
     }
     getAllCoinsAndSend("updateCoins");
   } catch (error) {
@@ -111,6 +110,7 @@ const updateCoinsInfo = async () => {
 
 updateCoinsInfo();
 cron.schedule("*/5 * * * *", () => {
+  console.log("Update coins info");
   updateCoinsInfo();
 });
 
@@ -118,54 +118,11 @@ io.on("connection", socket => {
   getAllCoinsAndSend("updateCoins");
 });
 
-const profit = async () => {
-  try {
-    const portfolios = await Portfolio.find().populate(["deals", "coins"]);
-    for (const p of portfolios) {
-      try {
-        const buy = p.deals
-          .filter(d => d.type === "buy")
-          .map(d => d.sum)
-          .reduce((a, b) => a + b, 0);
-        const now = p.deals
-          .filter(d => d.type === "buy")
-          ?.map(d => p.coins.find(c => c.name === d.coin.name).price * d.count)
-          .reduce((a, b) => a + b, 0);
-        const profit = {
-          value: (buy / now).toFixed(1) || 0,
-          date: startOfDay(new Date()),
-        };
-        if (
-          !!p.profit.find(
-            p => p.date.toString() === startOfDay(new Date()).toString()
-          )
-        ) {
-          p.profit = p.profit.map(p => {
-            if (p.date.toString() === startOfDay(new Date()).toString()) {
-              p.value = profit.value;
-            }
-            return p;
-          });
-        } else {
-          p.profit.push(profit);
-        }
-        p.profit = p.profit.sort((a, b) => new Date(a.date) - new Date(b.date));
-        p.save(err => {
-          if (err) throw new Error(err);
-        });
-      } catch (error) {
-        throw new Error(error.message);
-      }
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-};
-
-profit();
+profit(axios);
 success();
 
-cron.schedule("0 0 0 * * *", () => {
-  profit();
+cron.schedule("00 00 */1 * * * *", () => {
+  console.log("Update profit and success");
+  profit(axios);
   success();
 });

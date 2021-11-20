@@ -28,7 +28,10 @@ router.get("/last", withAuth, async (req, res) => {
         .flat()
         .map(r => ({
           ...r._doc,
-          responseFor: comments.find(c => c.replies.includes(r)).content,
+          responseFor: {
+            text: comments.find(c => c.replies.includes(r)).content,
+            owner: comments.find(c => c.replies.includes(r)).owner.name,
+          },
         }))
         .sort((a, b) => new Date(b.created) - new Date(a.created))
         .slice(0, 4)
@@ -67,7 +70,10 @@ router.get("/last/:owner", withAuth, async (req, res) => {
         .flat()
         .map(r => ({
           ...r._doc,
-          responseFor: comments.find(c => c.replies.includes(r)).content,
+          responseFor: {
+            text: comments.find(c => c.replies.includes(r)).content,
+            owner: comments.find(c => c.replies.includes(r)).owner.name,
+          },
         }))
         .sort((a, b) => new Date(b.created) - new Date(a.created))
         .slice(0, 4)
