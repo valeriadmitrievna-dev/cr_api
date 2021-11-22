@@ -66,17 +66,17 @@ router.get("/last/:owner", withAuth, async (req, res) => {
     ]);
     res.status(200).json(
       comments
-        .map(c => c.replies)
-        .flat()
-        .map(r => ({
-          ...r._doc,
-          responseFor: {
-            text: comments.find(c => c.replies.includes(r)).content,
-            owner: comments.find(c => c.replies.includes(r)).owner.name,
-          },
+        .map(d => ({
+          ...d._doc,
+          replies: d.replies.sort(
+            (a, b) => new Date(b.created) - new Date(a.created)
+          ),
         }))
-        .sort((a, b) => new Date(b.created) - new Date(a.created))
-        .slice(0, 4)
+        .sort(
+          (a, b) =>
+            new Date(b.replies[0].created) - new Date(a.replies[0].created)
+        )
+        .slice(0, 2)
     );
   } catch (e) {
     console.log(e.message);

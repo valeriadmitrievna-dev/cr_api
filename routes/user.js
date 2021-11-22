@@ -47,7 +47,7 @@ router.post("/signup", async (req, res) => {
     }
 
     const portfolio = new Portfolio();
-    const portfolios = Portfolio.find();
+    const portfolios = await Portfolio.find();
     portfolio.rating_number = portfolios.length + 1;
     await portfolio.save(err => {
       if (err) {
@@ -436,6 +436,19 @@ router.get("/portfolio/:name", withAuth, async (req, res) => {
           populate: {
             path: "comment",
             model: "Comment",
+            populate: [
+              {
+                path: "replies",
+                populate: [
+                  {
+                    path: "owner",
+                  },
+                ],
+              },
+              {
+                path: "owner",
+              },
+            ],
           },
         },
         {
