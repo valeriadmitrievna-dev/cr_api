@@ -197,4 +197,37 @@ router.get("/deals/:name", withAuth, async (req, res) => {
   }
 });
 
+// Get coin data
+router.get("/:name", withAuth, async (req, res) => {
+  try {
+    const { name } = req.params;
+    const coin = await Coin.findOne({ name });
+    if (!coin) {
+      return res.status(400).json({ error: "Unknow coin" });
+    }
+    const forecast = await require("../helpers/coins_forecast")(coin);
+    const deals = await Deal.find({
+      "coin.name": name,
+    })
+      .sort({ _id: -1 })
+      .populate({
+        path: "owner",
+        populate: {
+          path: "portfolio",
+          model: "Portfolio",
+        },
+      });
+    res.status(200).json({
+      coin,
+      forecast,
+      deals,
+    });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
 module.exports = router;

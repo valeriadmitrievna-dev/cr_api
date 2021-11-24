@@ -90,7 +90,7 @@ module.exports = async axios => {
       try {
         p.rating_number = ratingArray.indexOf(p) + 1;
         p.save(err => {
-          if (err) throw new Error(error.message);
+          if (err) throw new Error(err.message);
         });
       } catch (error) {
         throw new Error(error.message);

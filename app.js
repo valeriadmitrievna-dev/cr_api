@@ -121,7 +121,7 @@ io.on("connection", socket => {
 profit(axios);
 success();
 
-cron.schedule("00 00 */1 * * * *", () => {
+cron.schedule("*/59 * * * *", () => {
   console.log("Update profit and success");
   profit(axios);
   success();
