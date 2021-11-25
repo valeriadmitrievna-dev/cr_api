@@ -76,6 +76,10 @@ router.post("/signup", async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET, {
           expiresIn: "24h",
         });
+        res.cookie("access token", token, {
+          // secure: process.env.NODE_ENV === "production",
+          // httpOnly: true,
+        });
         return res.status(200).json(token);
       }
     });
@@ -122,7 +126,7 @@ router.post("/signin", async (req, res) => {
     });
     res.cookie("access token", token, {
       // secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
+      // httpOnly: true,
     });
     return res.status(200).json(token);
   } catch (e) {
