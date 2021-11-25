@@ -77,7 +77,7 @@ router.post("/signup", async (req, res) => {
           expiresIn: "24h",
         });
         res.cookie("access token", token, {
-          // secure: process.env.NODE_ENV === "production",
+          secure: process.env.NODE_ENV === "production",
           // httpOnly: true,
           sameSite: "none",
         });
@@ -126,7 +126,7 @@ router.post("/signin", async (req, res) => {
       expiresIn: "24h",
     });
     res.cookie("access token", token, {
-      // secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
       // httpOnly: true,
       sameSite: "none",
     });
