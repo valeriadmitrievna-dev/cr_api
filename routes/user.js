@@ -77,9 +77,10 @@ router.post("/signup", async (req, res) => {
           expiresIn: "24h",
         });
         res.cookie("access token", token, {
-          secure: process.env.NODE_ENV === "production",
+          // secure: process.env.NODE_ENV === "production",
           httpOnly: true,
-          sameSite: "none",
+          // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          domain: ".herokuapp.com"
         });
         return res.status(200).json(token);
       }
@@ -126,9 +127,10 @@ router.post("/signin", async (req, res) => {
       expiresIn: "24h",
     });
     res.cookie("access token", token, {
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      sameSite: "none",
+      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: ".herokuapp.com"
     });
     return res.status(200).json(token);
   } catch (e) {
