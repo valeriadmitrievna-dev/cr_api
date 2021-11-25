@@ -77,10 +77,9 @@ router.post("/signup", async (req, res) => {
           expiresIn: "24h",
         });
         res.cookie("access token", token, {
-          // secure: process.env.NODE_ENV === "production",
+          secure: process.env.NODE_ENV === "production",
           httpOnly: true,
-          // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-          domain: ".herokuapp.com"
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         });
         return res.status(200).json(token);
       }
@@ -127,10 +126,9 @@ router.post("/signin", async (req, res) => {
       expiresIn: "24h",
     });
     res.cookie("access token", token, {
-      // secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      domain: "https://cryptoranks-api.herokuapp.com"
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
     return res.status(200).json(token);
   } catch (e) {
