@@ -77,10 +77,9 @@ router.post("/signup", async (req, res) => {
           expiresIn: "24h",
         });
         res.cookie("access token", token, {
-          secure: process.env.NODE_ENV === "production",
-          httpOnly: true,
+          // secure: process.env.NODE_ENV === "production",
+          // httpOnly: true,
           sameSite: "none",
-          domain: "https://cryptoranks-app.herokuapp.com",
         });
         return res.status(200).json(token);
       }
@@ -127,10 +126,9 @@ router.post("/signin", async (req, res) => {
       expiresIn: "24h",
     });
     res.cookie("access token", token, {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      // httpOnly: true,
       sameSite: "none",
-      domain: "https://cryptoranks-app.herokuapp.com",
     });
     return res.status(200).json(token);
   } catch (e) {
