@@ -80,7 +80,7 @@ router.post("/signup", async (req, res) => {
           secure: process.env.NODE_ENV === "production",
           httpOnly: true,
           sameSite: "none",
-          domain: "herokuapp.com",
+          domain: "https://cryptoranks-app.herokuapp.com",
         });
         return res.status(200).json(token);
       }
@@ -130,7 +130,7 @@ router.post("/signin", async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "none",
-      domain: "herokuapp.com",
+      domain: "https://cryptoranks-app.herokuapp.com",
     });
     return res.status(200).json(token);
   } catch (e) {
