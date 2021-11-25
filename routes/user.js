@@ -130,7 +130,7 @@ router.post("/signin", async (req, res) => {
       // secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      domain: ".herokuapp.com"
+      domain: "https://cryptoranks-api.herokuapp.com"
     });
     return res.status(200).json(token);
   } catch (e) {
