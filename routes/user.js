@@ -79,7 +79,7 @@ router.post("/signup", async (req, res) => {
         res.cookie("access token", token, {
           secure: process.env.NODE_ENV === "production",
           httpOnly: true,
-          // sameSite: "none",
+          sameSite: "none",
         });
         return res.status(200).json(token);
       }
@@ -128,7 +128,7 @@ router.post("/signin", async (req, res) => {
     res.cookie("access token", token, {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      // sameSite: "none",
+      sameSite: "none",
     });
     return res.status(200).json(token);
   } catch (e) {
