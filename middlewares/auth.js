@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 module.exports = async function (req, res, next) {
   try {
-    // console.log(req.route.path);
+    console.log(req.route.path);
     if (req.method === "OPTIONS") return next();
 
     const token =
@@ -10,12 +10,11 @@ module.exports = async function (req, res, next) {
     console.log("token: ", token);
     if (!token) throw new Error("No token provided");
     const data = jwt.verify(token, process.env.SECRET);
-    console.log("data: ", data);
     req.decoded = data;
-
+    console.log("success auth");
     return next();
   } catch (error) {
-    console.log('Not auth');
+    console.log("Not auth");
     console.log(error.message);
     return res.status(401).send({
       error: "Not Authenticated",
