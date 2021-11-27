@@ -5,7 +5,8 @@ module.exports = async function (req, res, next) {
     // console.log(req.route.path);
     if (req.method === "OPTIONS") return next();
 
-    const token = req.cookies["access token"]|| req.headers.authorization?.split(" ")[1];
+    const token =
+      req.cookies["access token"] || req.headers.authorization?.split(" ")[1];
     if (!token) throw new Error("No token provided");
     const data = jwt.verify(token, process.env.SECRET);
     req.decoded = data;
