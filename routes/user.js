@@ -177,7 +177,6 @@ router.put("/update/avatar", withAuth, async (req, res) => {
 
 // Check if user authenticated
 router.get("/auth/check", withAuth, (req, res) => {
-  const data = req.decoded;
   return res.status(200).json();
 });
 
