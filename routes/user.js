@@ -6,6 +6,7 @@ const AWS = require("aws-sdk");
 const User = require("../models/User");
 const withAuth = require("../middlewares/auth");
 const Portfolio = require("../models/Portfolio");
+const nodemailer = require("nodemailer");
 
 const credentials = new AWS.Credentials({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -106,6 +107,11 @@ router.post("/signin", async (req, res) => {
     if (!password) {
       return res.status(400).json({
         error: "Password is required",
+      });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({
+        error: "Password length should be equial or greater than 6",
       });
     }
 
@@ -469,6 +475,233 @@ router.get("/portfolio/:name", withAuth, async (req, res) => {
     }
     res.status(200).json(user);
   } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// forget password send link
+router.post("/password/forget", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    if (!user.email) {
+      user.email = email;
+    }
+    const transporter = nodemailer.createTransport({
+      service: process.env.SMTP_SERVICE,
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const token = jwt.sign(email, process.env.SECRET);
+    const mailOptions = {
+      from: process.env.SMTP_EMAIL,
+      to: email,
+      subject: "Update password on CryptoRanks",
+      html: `
+      <!DOCTYPE HTML PUBLIC>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap"
+            rel="stylesheet" type="text/css"
+          />
+          <title>CryptoRanks</title>
+          <style type="text/css">
+            @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap");
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              font-family: "Montserrat", 'Roboto', sans-serif;
+            }
+            #main {
+              background-image: linear-gradient(
+                287.67deg,
+                #2c4b5c 3.66%,
+                #1d1b24 86.16%
+              );
+              background-repeat: no-repeat;
+              background-size: cover;
+              padding: 50px;
+              min-height: 600px;
+            }
+            a {
+              display: block;
+              color: #fff;
+              text-decoration: none;
+            }
+            h1 {
+              display: flex;
+              align-items: center;
+              width: fit-content;
+              color: #4c9ad2;
+              margin: 0 auto;
+              margin-bottom: 50px;
+              height: fit-content;
+            }
+            h1 img {
+              margin-right: 10px;
+            }
+            h2 {
+              color: #fff;
+              font-weight: normal;
+              margin-bottom: 40px;
+              text-align: center;
+            }
+            p {
+              color: rgba(255, 255, 255, 0.4);
+              text-align: center;
+            }
+            div > p {
+              margin: 0 auto;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="main">
+            <h1>
+              <img
+                src="https://cryptoranks.s3.amazonaws.com/logo.svg"
+                style="border: none; width: 50px; height: 50px"
+              />
+              CryptoRanks
+            </h1>
+            <div style="background: rgba(255, 255, 255, 0.04);
+            border-radius: 30px;
+            padding: 40px 60px;
+            height: fit-content;
+            min-width: 500px;
+            max-width: 600px;
+            margin: 0 auto;
+            margin-bottom: 40px;">
+              <h2>Forgot your password?</h2>
+              <p style="margin-bottom: 40px">
+                That's okay, it happens! Click on the button below to reset your
+                password.
+              </p>
+              <a id="link" href="${
+                process.env.NODE_ENV === "development"
+                  ? process.env.APP_DEV
+                  : process.env.APP_ORIGIN
+              }/password/${token}" style="text-transform: uppercase;
+              padding: 20px 40px;
+              background-color: #1890ff;
+              color: #fff;
+              border-radius: 8px;
+              font-weight: bold;
+              width: fit-content;
+              margin: 0 auto;">reset password</a>
+            </div>
+            <p style="max-width: 400px">
+              Problems or questions? Contact us with
+              <a
+                href="support.cryptoranks.io"
+                style="color: #1890ff; font-weight: bold"
+                >support.cryptoranks.io</a
+              >
+            </p>
+          </div>
+        </body>
+      </html>
+    `,
+    };
+
+    user.password_token = token;
+    user.save(err => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(500)
+          .json({ error: "Error on creating updaint token" });
+      }
+    });
+
+    transporter.sendMail(mailOptions, error => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Error on sending message" });
+      } else {
+        console.log("Email sended");
+        return res.status(200).json();
+      }
+    });
+  } catch (error) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// check updating token
+router.get("/password/forget/check/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await User.findOne({ password_token: token });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: "Invalid token or password already updated" });
+    }
+    res.status(200).json();
+  } catch (error) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// update forgeted password
+router.post("/password/forget/update", async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token?.length) {
+      return res.status(400).json({ error: "Token is required" });
+    }
+    if (!password?.length) {
+      return res.status(400).json({ error: "Password is required" });
+    }
+    if (password?.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Password length should be equial or greater than 6" });
+    }
+    const user = await User.findOne({ password_token: token });
+    if (!user) {
+      return res.status(404).json({ error: "Invalid token" });
+    }
+    if (bcrypt.compareSync(password, user.password)) {
+      return res.status(404).json({
+        error: "The new password must not be the same as the old one",
+      });
+    }
+    user.password = password;
+    user.password_token = undefined;
+    user.save(err => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Error on saving new password" });
+      }
+    });
+
+    res.status(200).json();
+  } catch (error) {
     console.log(e.message);
     return res.status(500).json({
       error: "Internal server error",

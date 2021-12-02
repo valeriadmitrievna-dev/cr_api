@@ -14,6 +14,7 @@ const schema = new Schema({
     default: "https://cryptoranks.s3.amazonaws.com/avatar.png",
   },
   portfolio: { type: Types.ObjectId, ref: "Portfolio", required: true },
+  password_token: { type: String },
 });
 
 schema.pre("save", function (next) {

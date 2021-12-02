@@ -25,8 +25,8 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "development"
-        ? process.env.API_DEV
-        : process.env.API_ORIGIN,
+        ? process.env.APP_DEV
+        : process.env.APP_ORIGIN,
     credentials: true,
   })
 );
