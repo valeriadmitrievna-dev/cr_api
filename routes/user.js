@@ -504,11 +504,17 @@ router.post("/password/forget", async (req, res) => {
       },
     });
 
+    // image
+    // <img
+    //   src="https://cryptoranks.s3.amazonaws.com/logo.svg"
+    //   style="border: none; width: 50px; height: 50px"
+    // />
+
     const token = jwt.sign(email, process.env.SECRET);
     const mailOptions = {
       from: process.env.SMTP_EMAIL,
       to: email,
-      subject: "Update password on CryptoRanks",
+      subject: "Reset password on CryptoRanks",
       html: `
       <!DOCTYPE HTML PUBLIC>
       <html lang="en">
@@ -517,12 +523,17 @@ router.post("/password/forget", async (req, res) => {
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <link
-            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap"
+            href="https://fonts.googleapis.com/css?family=Montserrat"
+            rel="stylesheet" type="text/css"
+          />
+          <link
+            href="https://fonts.googleapis.com/css?family=Roboto"
             rel="stylesheet" type="text/css"
           />
           <title>CryptoRanks</title>
           <style type="text/css">
-            @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap");
+            @import url("https://fonts.googleapis.com/css?family=Montserrat");
+            @import url("https://fonts.googleapis.com/css?family=Roboto");
             * {
               margin: 0;
               padding: 0;
@@ -575,10 +586,6 @@ router.post("/password/forget", async (req, res) => {
         <body>
           <div id="main">
             <h1>
-              <img
-                src="https://cryptoranks.s3.amazonaws.com/logo.svg"
-                style="border: none; width: 50px; height: 50px"
-              />
               CryptoRanks
             </h1>
             <div style="background: rgba(255, 255, 255, 0.04);
