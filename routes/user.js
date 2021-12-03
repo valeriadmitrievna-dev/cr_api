@@ -6,7 +6,15 @@ const AWS = require("aws-sdk");
 const User = require("../models/User");
 const withAuth = require("../middlewares/auth");
 const Portfolio = require("../models/Portfolio");
+
 const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  service: process.env.SMTP_SERVICE,
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
 
 const credentials = new AWS.Credentials({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -496,19 +504,6 @@ router.post("/password/forget", async (req, res) => {
     if (!user.email) {
       user.email = email;
     }
-    const transporter = nodemailer.createTransport({
-      service: process.env.SMTP_SERVICE,
-      auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
-
-    // image
-    // <img
-    //   src="https://cryptoranks.s3.amazonaws.com/logo.svg"
-    //   style="border: none; width: 50px; height: 50px"
-    // />
 
     const token = jwt.sign(email, process.env.SECRET);
     const mailOptions = {
@@ -516,7 +511,7 @@ router.post("/password/forget", async (req, res) => {
       to: email,
       subject: "Reset password on CryptoRanks",
       html: `
-      <!DOCTYPE HTML PUBLIC>
+      <!DOCTYPE html PUBLIC>
       <html lang="en">
         <head>
           <meta charset="UTF-8" />
@@ -524,21 +519,23 @@ router.post("/password/forget", async (req, res) => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <link
             href="https://fonts.googleapis.com/css?family=Montserrat"
-            rel="stylesheet" type="text/css"
+            rel="stylesheet"
+            type="text/css"
           />
           <link
             href="https://fonts.googleapis.com/css?family=Roboto"
-            rel="stylesheet" type="text/css"
+            rel="stylesheet"
+            type="text/css"
           />
           <title>CryptoRanks</title>
           <style type="text/css">
-            @import url("https://fonts.googleapis.com/css?family=Montserrat");
-            @import url("https://fonts.googleapis.com/css?family=Roboto");
+            @import url("https://fonts.googleapis.com/css2?family=Montserrat");
+            @import url("https://fonts.googleapis.com/css2?family=Roboto");
             * {
               margin: 0;
               padding: 0;
               box-sizing: border-box;
-              font-family: "Montserrat", 'Roboto', sans-serif;
+              font-family: "Montserrat", "Roboto", sans-serif;
             }
             #main {
               background-image: linear-gradient(
@@ -558,7 +555,6 @@ router.post("/password/forget", async (req, res) => {
             }
             h1 {
               display: flex;
-              align-items: center;
               width: fit-content;
               color: #4c9ad2;
               margin: 0 auto;
@@ -567,6 +563,10 @@ router.post("/password/forget", async (req, res) => {
             }
             h1 img {
               margin-right: 10px;
+            }
+            h1 span {
+              display: block;
+              margin-top: 5px;
             }
             h2 {
               color: #fff;
@@ -586,33 +586,48 @@ router.post("/password/forget", async (req, res) => {
         <body>
           <div id="main">
             <h1>
-              CryptoRanks
+              <img
+                src="https://cryptoranks.s3.amazonaws.com/logo.png"
+                style="border: none; display: block"
+                width="50"
+                height="50"
+                alt="logo"
+                title="logo"
+              />
+              <span>CryptoRanks</span>
             </h1>
-            <div style="background: rgba(255, 255, 255, 0.04);
-            border-radius: 30px;
-            padding: 40px 60px;
-            height: fit-content;
-            min-width: 500px;
-            max-width: 600px;
-            margin: 0 auto;
-            margin-bottom: 40px;">
+            <div
+              style="
+                background: rgba(255, 255, 255, 0.04);
+                border-radius: 30px;
+                padding: 40px 60px;
+                height: fit-content;
+                min-width: 500px;
+                max-width: 600px;
+                margin: 0 auto;
+                margin-bottom: 40px;
+              "
+            >
               <h2>Forgot your password?</h2>
               <p style="margin-bottom: 40px">
                 That's okay, it happens! Click on the button below to reset your
                 password.
               </p>
-              <a id="link" href="${
-                process.env.NODE_ENV === "development"
-                  ? process.env.APP_DEV
-                  : process.env.APP_ORIGIN
-              }/password/${token}" style="text-transform: uppercase;
-              padding: 20px 40px;
-              background-color: #1890ff;
-              color: #fff;
-              border-radius: 8px;
-              font-weight: bold;
-              width: fit-content;
-              margin: 0 auto;">reset password</a>
+              <a
+                id="link"
+                href="kk"
+                style="
+                  text-transform: uppercase;
+                  padding: 20px 40px;
+                  background-color: #1890ff;
+                  color: #fff;
+                  border-radius: 8px;
+                  font-weight: bold;
+                  width: fit-content;
+                  margin: 0 auto;
+                "
+                >reset password</a
+              >
             </div>
             <p style="max-width: 400px">
               Problems or questions? Contact us with
