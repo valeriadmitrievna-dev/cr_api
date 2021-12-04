@@ -430,10 +430,180 @@ router.post("/subscription", withAuth, async (req, res) => {
     } else {
       const sub_user = await User.findOne({ _id: subscription });
       user.subscriptions.push(sub_user);
+      const mailOptions = {
+        from: "CryptoRanks",
+        to: sub_user.email,
+        subject: "New follower!",
+        html: `
+        <!DOCTYPE html PUBLIC>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>CryptoRanks</title>
+            <style type="text/css">
+              @import url("https://fonts.googleapis.com/css2?family=Montserrat");
+              @import url("https://fonts.googleapis.com/css2?family=Roboto");
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Montserrat", "Roboto", sans-serif;
+              }
+              #main {
+                background-image: linear-gradient(
+                  287.67deg,
+                  #2c4b5c 3.66%,
+                  #1d1b24 86.16%
+                );
+                background-repeat: no-repeat;
+                background-size: cover;
+                padding: 50px;
+                min-height: 600px;
+              }
+              a {
+                display: block;
+                color: #fff;
+                text-decoration: none;
+              }
+              h1 {
+                display: flex;
+                width: fit-content;
+                color: #4c9ad2;
+                margin: 0 auto;
+                margin-bottom: 50px;
+                height: fit-content;
+              }
+              h1 img {
+                margin-right: 10px;
+              }
+              h1 span {
+                display: block;
+                margin-top: 5px;
+              }
+              h2 {
+                color: #fff;
+                font-weight: normal;
+                margin-bottom: 20px;
+                text-align: center;
+              }
+              p {
+                color: rgba(255, 255, 255, 0.4);
+                text-align: center;
+              }
+              div > p {
+                margin: 0 auto;
+              }
+              table p {
+                text-align: left;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="main">
+              <h1>
+                <img
+                  src="https://cryptoranks.s3.amazonaws.com/logo.png"
+                  style="border: none; display: block"
+                  width="50"
+                  height="50"
+                  alt="logo"
+                  title="logo"
+                />
+                <span>CryptoRanks</span>
+              </h1>
+              <div
+                style="
+                  background: rgba(255, 255, 255, 0.04);
+                  border-radius: 30px;
+                  padding: 20px 30px;
+                  height: fit-content;
+                  min-width: 500px;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  margin-bottom: 40px;
+                "
+              >
+                <h2>You have new follower!</h2>
+                <table style="
+                  margin: 0 auto;
+                  width: fit-content;
+                ">
+                  <tr>
+                    <td>
+                      <a href="${
+                        process.env.NODE_ENV === "development"
+                          ? process.env.APP_DEV
+                          : process.env.APP_ORIGIN
+                      }/portfolio/${user.name}">
+                        <table
+                          style="
+                            padding: 5px 15px;
+                            background: rgba(255, 255, 255, 0.07);
+                            border-radius: 16px;
+                          "
+                        >
+                          <tr>
+                            <td>
+                              <img
+                                src="${user.avatar}"
+                                style="
+                                  border: none;
+                                  display: block;
+                                  border-radius: 50%;
+                                  object-fit: cover;
+                                  margin-right: 10px;
+                                "
+                                width="50"
+                                height="50"
+                              />
+                            </td>
+                            <td
+                              style="
+                                font-weight: bold;
+                                color: rgba(255, 255, 255, 0.5);
+                                font-size: 18px;
+                              "
+                            >
+                              ${user.name}
+                            </td>
+                          </tr>
+                        </table>
+                      </a>
+                    </td>
+                    <td style="padding-left: 10px; color: rgba(255, 255, 255, 0.5)">
+                      now following you on CryptoRanks.
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <p style="max-width: 400px">
+                Problems or questions? Contact us with
+                <a
+                  href="support.cryptoranks.io"
+                  style="color: #1890ff; font-weight: bold"
+                  >support.cryptoranks.io</a
+                >
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+      };
+      transporter.sendMail(mailOptions, error => {
+        if (error) {
+          console.log(error);
+          return res.status(500).json({ error: "Error on sending message" });
+        } else {
+          console.log("Email sended");
+        }
+      });
     }
     await user.save(err => {
       if (err) throw new Error("Error on saving");
     });
+
     res.status(200).json({ success: true });
   } catch (e) {
     console.log(e.message);
