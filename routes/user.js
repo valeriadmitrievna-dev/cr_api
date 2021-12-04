@@ -785,7 +785,11 @@ router.post("/password/forget", async (req, res) => {
               </p>
               <a
                 id="link"
-                href="kk"
+                href="${
+                  process.env.NODE_ENV === "development"
+                    ? process.env.APP_DEV
+                    : process.env.APP_ORIGIN
+                }/password/${token}"
                 style="
                   text-transform: uppercase;
                   padding: 20px 40px;
