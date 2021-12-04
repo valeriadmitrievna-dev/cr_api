@@ -81,7 +81,7 @@ const updateCoinsInfo = async () => {
             { name: coin.id },
             {
               logo: coin.image.small,
-              price: Math.round(coin.market_data.current_price.usd),
+              price: Math.trunc(coin.market_data.current_price.usd * 100) / 100,
               name: coin.id,
               updated: new Date(),
               short_name: coin.symbol,

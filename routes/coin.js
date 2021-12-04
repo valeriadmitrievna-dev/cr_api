@@ -157,7 +157,7 @@ router.get("/chart/:name/:days", withAuth, async (req, res) => {
     const prices = response.data.prices.map(pair => {
       return {
         date: pair[0],
-        price: Math.round(pair[1]),
+        price: Math.trunc(pair[1] * 100) / 100,
       };
     });
     prices.splice(days - 1, 1);
