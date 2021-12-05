@@ -27,6 +27,9 @@ const io = new Server(http, {
 const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   service: process.env.SMTP_SERVICE,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD,
