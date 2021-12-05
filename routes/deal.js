@@ -7,15 +7,6 @@ const User = require("../models/User");
 const Coin = require("../models/Coin");
 const Comment = require("../models/Comment");
 
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-  service: process.env.SMTP_SERVICE,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
-
 // Get all user deals
 router.get("/", withAuth, async (req, res) => {
   try {
@@ -335,7 +326,7 @@ router.post("/", withAuth, async (req, res) => {
           </html>
         `,
         };
-        transporter.sendMail(mailOptions, error => {
+        req.app.get('transporter').sendMail(mailOptions, error => {
           if (error) {
             console.log(error);
             console.log("Email not sended");

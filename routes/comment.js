@@ -5,15 +5,6 @@ const Comment = require("../models/Comment");
 const Deal = require("../models/Deal");
 const User = require("../models/User");
 
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-  service: process.env.SMTP_SERVICE,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
-
 // Get last commnets with replies
 router.get("/last", withAuth, async (req, res) => {
   try {
@@ -339,7 +330,7 @@ router.post("/response", withAuth, async (req, res) => {
       </html>
       `,
     };
-    transporter.sendMail(mailOptions, error => {
+    req.app.get('transporter').sendMail(mailOptions, error => {
       if (error) {
         console.log(error);
         console.log("Email not sended");

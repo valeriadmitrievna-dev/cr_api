@@ -24,6 +24,17 @@ const io = new Server(http, {
   },
 });
 
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  service: process.env.SMTP_SERVICE,
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
+
+app.set("transporter", transporter);
+
 app.use(
   cors({
     origin:

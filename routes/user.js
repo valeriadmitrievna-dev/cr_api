@@ -7,15 +7,6 @@ const User = require("../models/User");
 const withAuth = require("../middlewares/auth");
 const Portfolio = require("../models/Portfolio");
 
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-  service: process.env.SMTP_SERVICE,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
-
 const credentials = new AWS.Credentials({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -591,7 +582,7 @@ router.post("/subscription", withAuth, async (req, res) => {
         </html>
       `,
       };
-      transporter.sendMail(mailOptions, error => {
+      req.app.get('transporter').sendMail(mailOptions, error => {
         if (error) {
           console.log(error);
           console.log("Email not sended");
@@ -827,7 +818,7 @@ router.post("/password/forget", async (req, res) => {
       }
     });
 
-    transporter.sendMail(mailOptions, error => {
+    req.app.get('transporter').sendMail(mailOptions, error => {
       if (error) {
         console.log(error);
         console.log("Email not sended");
