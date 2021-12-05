@@ -338,7 +338,7 @@ router.post("/", withAuth, async (req, res) => {
         transporter.sendMail(mailOptions, error => {
           if (error) {
             console.log(error);
-            throw new Error("Error on sending message: ", error.message);
+            console.log("Email not sended");
           } else {
             console.log("Email sended");
           }
