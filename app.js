@@ -17,7 +17,10 @@ const app = express();
 const http = require("http").createServer(app);
 const io = new Server(http, {
   cors: {
-    origin: "*",
+    origin:
+      process.env.NODE_ENV === "development"
+        ? process.env.APP_DEV
+        : process.env.APP_ORIGIN,
   },
 });
 
