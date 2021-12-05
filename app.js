@@ -28,7 +28,7 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   service: process.env.SMTP_SERVICE,
   host: "smtp.gmail.com",
-  port: 465,
+  port: 25,
   secure: false,
   auth: {
     user: process.env.SMTP_EMAIL,
@@ -37,6 +37,7 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false,
   },
+  pool: true
 });
 transporter.verify(function (error) {
   if (error) {
