@@ -32,6 +32,14 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASSWORD,
   },
 });
+transporter.verify(function (error) {
+  if (error) {
+    console.log("Server can't send emails");
+    console.log(error);
+  } else {
+    console.log("Server is ready to take our messages");
+  }
+});
 
 app.set("transporter", transporter);
 
