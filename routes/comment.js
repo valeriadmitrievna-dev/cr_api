@@ -342,7 +342,7 @@ router.post("/response", withAuth, async (req, res) => {
     transporter.sendMail(mailOptions, error => {
       if (error) {
         console.log(error);
-        return res.status(500).json({ error: "Error on sending message" });
+        throw new Error("Error on sending message: ", error.message);
       } else {
         console.log("Email sended");
       }
